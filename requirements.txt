@@ -1,0 +1,3 @@
+anthropic
+fal-client
+python-dotenv

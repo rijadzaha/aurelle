@@ -1,0 +1,15 @@
+# Secret keys - never commit these
+.env
+.env.*
+!.env.example
+
+# Everything the tool creates while running
+output/
+*.mp4
+*.mov
+
+# Python clutter
+__pycache__/
+*.pyc
+.venv/
+venv/

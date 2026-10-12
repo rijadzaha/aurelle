@@ -26,12 +26,12 @@ def clip_length(path):
         raise AssembleError(f"Could not read the clip '{path.name}'. It may be damaged; delete it and run again.")
 
 
-def build_video(clips, output_path, music_path=None, music_volume=0.6):
+def build_video(clips, output_path, music_path=None, music_volume=0.6, crossfade=CROSSFADE_SECONDS):
     if not clips:
         raise AssembleError("There are no clips to join.")
 
     lengths = [clip_length(c) for c in clips]
-    fade = min(CROSSFADE_SECONDS, min(lengths) / 3)
+    fade = min(crossfade, min(lengths) / 3)
 
     inputs = []
     for clip in clips:

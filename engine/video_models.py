@@ -8,6 +8,9 @@ To add a new fal.ai model: copy one of the entries, then change
   - "endpoint": the model id shown on the model's fal.ai page
   - "price_per_clip": what fal.ai charges for one 5-second clip (US dollars)
   - "extra_args": any extra settings that model accepts
+  - "supports_end_image": True only if the model can take an end photo too
+    (needed for --walkthrough). Check the model's fal.ai page for a field like
+    "tail_image_url" or "end_image_url", and put that name in "end_image_field".
 
 Prices change from time to time. Check the model's page on fal.ai and update
 "price_per_clip" so the cost report stays accurate.
@@ -20,6 +23,8 @@ VIDEO_MODELS = {
         "price_per_clip": 0.35,
         "extra_args": {"duration": "5", "cfg_scale": 0.5},
         "supports_negative_prompt": True,
+        "supports_end_image": True,
+        "end_image_field": "tail_image_url",
     },
     # Older and cheaper. Useful for test runs.
     "kling-2.1-standard": {
@@ -36,6 +41,14 @@ DEFAULT_VIDEO_MODEL = "kling-2.5-turbo-pro"
 CLIP_PROMPT = (
     "Slow, smooth, steady camera push-in toward the center of the scene. "
     "Keep the room exactly as shown: same furniture, layout, colors and lighting. "
+    "No people, no animals, no new objects, nothing moves except the camera."
+)
+
+# Used with --walkthrough: the camera travels from one photo to the next.
+WALKTHROUGH_PROMPT = (
+    "Smooth, steady walkthrough: the camera glides at walking pace from the first view "
+    "to the final view, like a person walking through the home with a gimbal. "
+    "Keep the rooms exactly as shown: same furniture, layout, colors and lighting. "
     "No people, no animals, no new objects, nothing moves except the camera."
 )
 

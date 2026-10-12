@@ -33,6 +33,10 @@ def parse_args():
                         help="only label and order the photos (costs a few cents); make no video")
     parser.add_argument("--relabel", action="store_true",
                         help="ask Claude again even if the photos were labeled in an earlier run")
+    parser.add_argument("--walkthrough", action="store_true",
+                        help="camera travels from each photo to the next (needs a model that takes an end photo)")
+    parser.add_argument("--only", type=int, metavar="N",
+                        help="with --walkthrough: make only move N (1 = photo 1 to 2), as a cheap test; no final video")
     parser.add_argument("--yes", action="store_true", help="do not ask for confirmation before spending")
     return parser.parse_args()
 
@@ -62,6 +66,12 @@ def main():
     claude_model = os.environ.get("CLAUDE_MODEL") or "claude-opus-5-5"
     max_parallel = int(os.environ.get("MAX_PARALLEL_CLIPS") or 4)
     music_volume = float(os.environ.get("MUSIC_VOLUME") or 0.6)
+
+    if args.walkthrough and not video_model.get("supports_end_image"):
+        able = ", ".join(n for n, m in VIDEO_MODELS.items() if m.get("supports_end_image"))
+        fail(f"The model '{model_name}' can't do --walkthrough. Use one of: {able}")
+    if args.only is not None and not args.walkthrough:
+        fail("--only works together with --walkthrough.")
 
     music = Path(args.music) if args.music else None
     if music and not music.is_file():
@@ -124,8 +134,22 @@ def main():
         return
 
     # --- Step 3: make the clips with fal.ai -----------------------------------
-    jobs = [(item["file"], widescreens[item["file"]], clips_dir / f"{Path(item['file']).stem}.mp4")
-            for item in plan]
+    if args.walkthrough:
+        # One clip per move: it starts on one photo and ends on the next.
+        jobs = []
+        for a, b in zip(plan, plan[1:]):
+            name = f"{Path(a['file']).stem}_to_{Path(b['file']).stem}"
+            jobs.append((name, widescreens[a["file"]], clips_dir / f"{name}.mp4", widescreens[b["file"]]))
+        if args.only is not None:
+            if not 1 <= args.only <= len(jobs):
+                fail(f"--only must be between 1 and {len(jobs)} (there are {len(jobs)} moves).")
+            jobs = [jobs[args.only - 1]]
+        print("\nWalkthrough moves:")
+        for job in jobs:
+            print(f"  - {job[0]}")
+    else:
+        jobs = [(item["file"], widescreens[item["file"]], clips_dir / f"{Path(item['file']).stem}.mp4", None)
+                for item in plan]
     new_clips = sum(1 for job in jobs if not job[2].exists())
     estimate = new_clips * video_model["price_per_clip"]
     print(f"\nVideo model: {model_name}  ({video_model['endpoint']})")
@@ -144,12 +168,18 @@ def main():
     if not finished:
         print(costs.report())
         fail(f"No clips were made, so there is no video. See {log_path}")
+    if args.only is not None:
+        print(f"\nTest clip ready: {finished[0]}  (no final video is made with --only)")
+        print(costs.report())
+        return
     if not music:
         print("\nNo music file given (--music), so the video will be silent.")
     output_path = out_dir / "output.mp4"
     print(f"\nJoining {len(finished)} clips into {output_path}...")
     try:
-        seconds = assemble.build_video(finished, output_path, music, music_volume)
+        # In a walkthrough each clip ends where the next begins, so only a very short blend is needed.
+        crossfade = 0.2 if args.walkthrough else assemble.CROSSFADE_SECONDS
+        seconds = assemble.build_video(finished, output_path, music, music_volume, crossfade)
     except assemble.AssembleError as e:
         print(costs.report())
         fail(str(e))

@@ -59,7 +59,7 @@ def _image_block(path):
     return {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": data}}
 
 
-def label_and_order(photos, previews, model, costs):
+def label_and_order(photos, previews, model, costs, api_key):
     """
     photos:   the original photo files
     previews: the shrunk copies to send (same order as photos)
@@ -71,7 +71,7 @@ def label_and_order(photos, previews, model, costs):
         content.append(_image_block(preview))
     content.append({"type": "text", "text": INSTRUCTIONS})
 
-    client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from the environment
+    client = anthropic.Anthropic(api_key=api_key)
     try:
         response = client.beta.messages.create(
             model=model,
@@ -87,7 +87,7 @@ def label_and_order(photos, previews, model, costs):
             messages=[{"role": "user", "content": content}],
         )
     except anthropic.AuthenticationError:
-        raise LabelingError("Claude rejected the API key. Check ANTHROPIC_API_KEY in your .env file.")
+        raise LabelingError("Claude rejected the API key. Check AURELLE_ANTHROPIC_KEY in your .env file.")
     except anthropic.PermissionDeniedError:
         raise LabelingError("Your Anthropic key is not allowed to use this model. Check your Anthropic account.")
     except anthropic.NotFoundError:

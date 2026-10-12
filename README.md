@@ -108,7 +108,7 @@ The photo-labelling model is set by `CLAUDE_MODEL` in `.env`. The default is `cl
 ## If something goes wrong
 
 The tool explains problems in plain words and stops before spending money it doesn't need to. Common ones:
-- **"ANTHROPIC_API_KEY is missing"**: check your `.env` file (step 6).
+- **"The Anthropic key is missing"**: check your `.env` file (step 6).
 - **"FFmpeg is not installed"**: redo step 2, then close and reopen the terminal.
 - **"A required add-on is missing"**: redo step 5.
 - **A clip failed**: see `output/<folder>/failed_clips.log`. Running the same command again only remakes the missing clips.

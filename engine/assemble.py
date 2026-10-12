@@ -26,11 +26,20 @@ def clip_length(path):
         raise AssembleError(f"Could not read the clip '{path.name}'. It may be damaged; delete it and run again.")
 
 
-def build_video(clips, output_path, music_path=None, music_volume=0.6, crossfade=CROSSFADE_SECONDS):
+def build_video(clips, output_path, music_path=None, music_volume=0.6, crossfade=CROSSFADE_SECONDS,
+                join_trim=0.0):
+    """
+    join_trim: seconds cut from each clip where it meets another clip (not at the very
+    start or end of the video). Used for walkthroughs, where the camera slows down at
+    each photo: cutting those slow ends means the camera never stops.
+    """
     if not clips:
         raise AssembleError("There are no clips to join.")
 
     lengths = [clip_length(c) for c in clips]
+    starts = [join_trim if i > 0 else 0.0 for i in range(len(clips))]
+    ends = [lengths[i] - (join_trim if i < len(clips) - 1 else 0.0) for i in range(len(clips))]
+    lengths = [e - s for s, e in zip(starts, ends)]
     fade = min(crossfade, min(lengths) / 3)
 
     inputs = []
@@ -41,7 +50,8 @@ def build_video(clips, output_path, music_path=None, music_volume=0.6, crossfade
     parts = []
     for i in range(len(clips)):
         parts.append(
-            f"[{i}:v]scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=increase,"
+            f"[{i}:v]trim=start={starts[i]:.3f}:end={ends[i]:.3f},setpts=PTS-STARTPTS,"
+            f"scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=increase,"
             f"crop={WIDTH}:{HEIGHT},setsar=1,fps={FPS},format=yuv420p,settb=AVTB[v{i}]"
         )
 

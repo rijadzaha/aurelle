@@ -11,6 +11,7 @@ To add a new fal.ai model: copy one of the entries, then change
   - "supports_end_image": True only if the model can take an end photo too
     (needed for --walkthrough). Check the model's fal.ai page for a field like
     "tail_image_url" or "end_image_url", and put that name in "end_image_field".
+    "walkthrough" holds the price and settings used for walkthrough moves.
 
 Prices change from time to time. Check the model's page on fal.ai and update
 "price_per_clip" so the cost report stays accurate.
@@ -25,6 +26,9 @@ VIDEO_MODELS = {
         "supports_negative_prompt": True,
         "supports_end_image": True,
         "end_image_field": "tail_image_url",
+        # Settings used instead with --walkthrough: 10-second moves for a slow pace.
+        # fal.ai: $0.35 for 5 seconds plus $0.07 per extra second = $0.70.
+        "walkthrough": {"price_per_clip": 0.70, "extra_args": {"duration": "10", "cfg_scale": 0.5}},
     },
     # Older and cheaper. Useful for test runs.
     "kling-2.1-standard": {
@@ -46,13 +50,16 @@ CLIP_PROMPT = (
 
 # Used with --walkthrough: the camera travels from one photo to the next.
 WALKTHROUGH_PROMPT = (
-    "Smooth, steady walkthrough: the camera glides at walking pace from the first view "
-    "to the final view, like a person walking through the home with a gimbal. "
+    "A camera on a smooth motorized rail glides slowly through the home at one constant, "
+    "steady speed from the first view to the final view. Already moving at the start and "
+    "still moving at the end: no speeding up, no slowing down, no stopping. Perfectly level, "
+    "no bobbing, no shake, no footsteps. "
     "Keep the rooms exactly as shown: same furniture, layout, colors and lighting. "
     "No people, no animals, no new objects, nothing moves except the camera."
 )
 
 NEGATIVE_PROMPT = (
     "people, person, animals, new objects, extra furniture, changing room, "
-    "morphing, warping, distortion, shaky camera, fast motion, text, watermark, blur"
+    "morphing, warping, distortion, shaky camera, bobbing, walking, handheld, fast motion, "
+    "sudden stop, text, watermark, blur"
 )

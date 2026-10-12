@@ -13,7 +13,7 @@ from pathlib import Path
 
 try:
     from dotenv import load_dotenv
-    from engine import assemble, clips, labeling, photos, smooth
+    from engine import assemble, clips, labeling, photos
 except ImportError as e:
     sys.exit(
         f"A required add-on is missing ({e.name}).\n"
@@ -35,8 +35,8 @@ def parse_args():
                         help="ask Claude again even if the photos were labeled in an earlier run")
     parser.add_argument("--walkthrough", action="store_true",
                         help="camera travels from each photo to the next (needs a model that takes an end photo)")
-    parser.add_argument("--only", type=int, metavar="N",
-                        help="with --walkthrough: make only move N (1 = photo 1 to 2), as a cheap test; no final video")
+    parser.add_argument("--only", metavar="N or N-M",
+                        help="with --walkthrough: make only these moves (1 = photo 1 to 2; 1-2 = first two), as a cheap test")
     parser.add_argument("--yes", action="store_true", help="do not ask for confirmation before spending")
     return parser.parse_args()
 
@@ -70,6 +70,8 @@ def main():
     if args.walkthrough and not video_model.get("supports_end_image"):
         able = ", ".join(n for n, m in VIDEO_MODELS.items() if m.get("supports_end_image"))
         fail(f"The model '{model_name}' can't do --walkthrough. Use one of: {able}")
+    if args.walkthrough:
+        video_model = {**video_model, **video_model["walkthrough"]}
     if args.only is not None and not args.walkthrough:
         fail("--only works together with --walkthrough.")
 
@@ -87,7 +89,8 @@ def main():
 
     out_dir = Path(args.out) if args.out else Path("output") / Path(args.photos).resolve().name
     prepared_dir = out_dir / "prepared"
-    clips_dir = out_dir / "clips" / model_name
+    clips_dir = out_dir / "clips" / (f"{model_name}-walkthrough-{video_model['extra_args']['duration']}s"
+                                      if args.walkthrough else model_name)
     prepared_dir.mkdir(parents=True, exist_ok=True)
     clips_dir.mkdir(parents=True, exist_ok=True)
     plan_path = out_dir / "plan.json"
@@ -141,9 +144,14 @@ def main():
             name = f"{Path(a['file']).stem}_to_{Path(b['file']).stem}"
             jobs.append((name, widescreens[a["file"]], clips_dir / f"{name}.mp4", widescreens[b["file"]]))
         if args.only is not None:
-            if not 1 <= args.only <= len(jobs):
+            try:
+                first, _, last = args.only.partition("-")
+                first, last = int(first), int(last or first)
+            except ValueError:
+                fail("--only must look like 2 or 1-2.")
+            if not 1 <= first <= last <= len(jobs):
                 fail(f"--only must be between 1 and {len(jobs)} (there are {len(jobs)} moves).")
-            jobs = [jobs[args.only - 1]]
+            jobs = jobs[first - 1:last]
         print("\nWalkthrough moves:")
         for job in jobs:
             print(f"  - {job[0]}")
@@ -168,23 +176,16 @@ def main():
     if not finished:
         print(costs.report())
         fail(f"No clips were made, so there is no video. See {log_path}")
-    if args.only is not None:
-        print(f"\nTest clip ready: {finished[0]}  (no final video is made with --only)")
-        print(costs.report())
-        return
     if not music:
         print("\nNo music file given (--music), so the video will be silent.")
     output_path = out_dir / "output.mp4"
     print(f"\nJoining {len(finished)} clips into {output_path}...")
     try:
-        crossfade = assemble.CROSSFADE_SECONDS
+        crossfade, join_trim = assemble.CROSSFADE_SECONDS, 0.0
         if args.walkthrough:
-            # Even out the camera speed so it doesn't slow down at every photo (free, done on this computer).
-            print("Evening out the camera speed...")
-            finished = smooth.smooth_clips(finished, out_dir / "smoothed")
-            # Each clip ends where the next begins, so only a very short blend is needed.
-            crossfade = 0.1
-        seconds = assemble.build_video(finished, output_path, music, music_volume, crossfade)
+            # Cut the slow ends where moves meet, then blend them slowly, so the camera never stops.
+            crossfade, join_trim = 2.0, 0.8
+        seconds = assemble.build_video(finished, output_path, music, music_volume, crossfade, join_trim)
     except assemble.AssembleError as e:
         print(costs.report())
         fail(str(e))

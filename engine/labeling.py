@@ -59,7 +59,7 @@ def _image_block(path):
     return {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": data}}
 
 
-def label_and_order(photos, previews, model, costs):
+def label_and_order(photos, previews, model, costs, api_key):
     """
     photos:   the original photo files
     previews: the shrunk copies to send (same order as photos)
@@ -71,7 +71,8 @@ def label_and_order(photos, previews, model, costs):
         content.append(_image_block(preview))
     content.append({"type": "text", "text": INSTRUCTIONS})
 
-    client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from the environment
+    # Talk to Anthropic directly, even if ANTHROPIC_BASE_URL points somewhere else.
+    client = anthropic.Anthropic(api_key=api_key, base_url="https://api.anthropic.com")
     try:
         response = client.beta.messages.create(
             model=model,

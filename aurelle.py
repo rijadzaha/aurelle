@@ -46,10 +46,14 @@ def main():
     args = parse_args()
     load_dotenv()  # reads the keys from the .env file
 
-    for key in ("ANTHROPIC_API_KEY", "FAL_KEY"):
-        value = os.environ.get(key, "")
-        if not value or value.startswith("paste-"):
-            fail(f"{key} is missing. Put it in your .env file (see .env.example).")
+    # Claude Code cloud environments hide ANTHROPIC_API_KEY, so AURELLE_ANTHROPIC_KEY also works.
+    anthropic_key = os.environ.get("AURELLE_ANTHROPIC_KEY") or os.environ.get("ANTHROPIC_API_KEY", "")
+    if not anthropic_key or anthropic_key.startswith("paste-"):
+        fail("ANTHROPIC_API_KEY is missing. Put it in your .env file (see .env.example).\n"
+             "  In a Claude Code cloud environment, name it AURELLE_ANTHROPIC_KEY instead.")
+    fal_key = os.environ.get("FAL_KEY", "")
+    if not fal_key or fal_key.startswith("paste-"):
+        fail("FAL_KEY is missing. Put it in your .env file (see .env.example).")
 
     model_name = args.model or os.environ.get("VIDEO_MODEL") or DEFAULT_VIDEO_MODEL
     if model_name not in VIDEO_MODELS:
@@ -104,7 +108,7 @@ def main():
         print(f"\nAsking Claude ({claude_model}) to label and order the photos...")
         try:
             plan = labeling.label_and_order(photo_files, [previews[p.name] for p in photo_files],
-                                            claude_model, costs)
+                                            claude_model, costs, anthropic_key)
         except labeling.LabelingError as e:
             print(costs.report())
             fail(str(e))

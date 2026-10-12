@@ -69,7 +69,7 @@ Your video ends up in `output/12-oak-street/output.mp4`.
 | `--relabel` | Asks Claude again, even if these photos were already labelled. |
 | `--model kling-2.1-standard` | Uses a different video model for this run. |
 | `--yes` | Skips the "type y to continue" question. |
-| `--walkthrough` | The camera travels from each photo to the next, instead of zooming into each photo. 5 photos make 4 moves (1→2, 2→3, 3→4, 4→5). Only works with `kling-2.5-turbo-pro`. Put the photos in walking order. |
+| `--walkthrough` | The camera travels from each photo to the next, instead of zooming into each photo. 5 photos make 4 moves (1→2, 2→3, 3→4, 4→5). Only works with `kling-2.5-turbo-pro`. Put the photos in walking order. The camera speed is evened out for free, so it doesn't slow down at every photo. |
 | `--walkthrough --only 2` | Makes just one move (here photo 2 → 3) as a cheap test ($0.35). No final video. |
 
 ### Changing the order yourself
@@ -126,3 +126,4 @@ The tool explains problems in plain words and stops before spending money it doe
 | `engine/assemble.py` | Joins clips and music with FFmpeg. |
 | `engine/video_models.py` | The list of video models, their prices and the camera prompt. |
 | `engine/costs.py` | Adds up the cost. |
+| `engine/smooth.py` | Evens out the camera speed in a walkthrough. |

@@ -13,7 +13,7 @@ from pathlib import Path
 
 try:
     from dotenv import load_dotenv
-    from engine import assemble, clips, labeling, photos
+    from engine import assemble, clips, labeling, photos, smooth
 except ImportError as e:
     sys.exit(
         f"A required add-on is missing ({e.name}).\n"
@@ -177,8 +177,13 @@ def main():
     output_path = out_dir / "output.mp4"
     print(f"\nJoining {len(finished)} clips into {output_path}...")
     try:
-        # In a walkthrough each clip ends where the next begins, so only a very short blend is needed.
-        crossfade = 0.2 if args.walkthrough else assemble.CROSSFADE_SECONDS
+        crossfade = assemble.CROSSFADE_SECONDS
+        if args.walkthrough:
+            # Even out the camera speed so it doesn't slow down at every photo (free, done on this computer).
+            print("Evening out the camera speed...")
+            finished = smooth.smooth_clips(finished, out_dir / "smoothed")
+            # Each clip ends where the next begins, so only a very short blend is needed.
+            crossfade = 0.1
         seconds = assemble.build_video(finished, output_path, music, music_volume, crossfade)
     except assemble.AssembleError as e:
         print(costs.report())

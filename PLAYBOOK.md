@@ -23,6 +23,24 @@ How every Aurelle walkthrough video is made. Read this first in any new session.
   output **30 frames per second**, blend clips while both are moving.
 - Exports: vertical 9:16 (1080x1920) and horizontal 16:9 (1920x1080).
 
+## House rules
+
+- **Delivery:** premium, not rushed. About a week. Never advertise speed.
+- **Changes:** as many rounds as needed until the agent is happy. Try free fixes
+  (cut, blend, reorder, text) before spending credits on new clips.
+- **Credit budget:** up to 400 credits per video without asking; above that, ask.
+- **No floor plan:** ask the agent for one. If none, plan from the photos only,
+  keep the route simple and blend instead of guessing.
+- **Language:** video text in the language of the country where the home is sold
+  (Icelandic in Iceland, definite form: Stofan, Eldhúsið). Ask if unclear.
+- **Music:** soft spa-like music (slow piano/ambient, no drums or vocals), quiet,
+  fading in and out. Rights-safe only (own AI-made "Aurelle sound" or
+  free-for-commercial-use libraries). Deliver a version with and without music.
+- **Watermark:** a slight, small "Aurelle" in a corner of the end screen only,
+  low opacity. Never over the tour itself.
+- **Emails** must match the video's quality: video thumbnail with a play button,
+  a personal first line about one of their listings, clean signature, proofread.
+
 ## Rules for walking through a home
 
 - **No home is the same.** Plan the route, highlights and mood for this home only.

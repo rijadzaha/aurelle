@@ -55,6 +55,15 @@ How every Aurelle walkthrough video is made. Read this first in any new session.
 - Upper-floor apartments: never walk from the street door straight into the flat.
 - No drone shot unless there is a real aerial photo.
 - Keep similar rooms (two bathrooms) far apart in the video.
+- People have short attention: drone 3–4 s max, no slow 10 s shots. Most clips
+  5 s, then trim and speed up in the edit.
+- Never the same motion twice in a row (not only push-ins).
+- Outside to inside is one walk: automatic/glass doors may open if they are real
+  (check the photos), then blend toward the lifts. No separate still-ish pieces.
+- Check door moments: the camera must go through the door, not through glass or
+  walls. If it doesn't, cut that part and blend while moving.
+- Photos can come from another floor (check flat numbers on signs). Don't show
+  another floor's view as the flat's view.
 
 ## Checklist
 

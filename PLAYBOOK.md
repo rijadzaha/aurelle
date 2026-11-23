@@ -38,6 +38,8 @@ How every Aurelle walkthrough video is made. Read this first in any new session.
   free-for-commercial-use libraries). Deliver a version with and without music.
 - **Watermark:** a slight, small "Aurelle" in a corner of the end screen only,
   low opacity. Never over the tour itself.
+- **Email timing:** client emails go out on weekdays 9:00–17:00 (Iceland time). If it's
+  late or night, schedule it for 9:00 the next morning instead of sending.
 - **Emails** must match the video's quality: video thumbnail with a play button,
   a personal first line about one of their listings, clean signature, proofread.
 
